@@ -1,0 +1,68 @@
+#######################################
+# DreamLink - Syntax Highlighting
+#######################################
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+
+DreamLink	KEYWORD1
+Condition	KEYWORD1
+RuleBuilder	KEYWORD1
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+
+begin	KEYWORD2
+wakeup	KEYWORD2
+sleep	KEYWORD2
+live	KEYWORD2
+when	KEYWORD2
+then	KEYWORD2
+sometimes	KEYWORD2
+behave	KEYWORD2
+addRule	KEYWORD2
+loadPattern	KEYWORD2
+loadRules	KEYWORD2
+clearRules	KEYWORD2
+readDistance	KEYWORD2
+readBattery	KEYWORD2
+forward	KEYWORD2
+backward	KEYWORD2
+turnLeft	KEYWORD2
+turnRight	KEYWORD2
+stop	KEYWORD2
+enableDebug	KEYWORD2
+printRules	KEYWORD2
+identify	KEYWORD2
+
+#######################################
+# Constants (LITERAL1)
+#######################################
+
+DISTANCE	LITERAL1
+BATTERY	LITERAL1
+LIGHT	LITERAL1
+HUMIDITY	LITERAL1
+TEMPERATURE	LITERAL1
+COLOR	LITERAL1
+NONE	LITERAL1
+
+LESS_THAN	LITERAL1
+GREATER	LITERAL1
+EQUAL	LITERAL1
+NOT_EQUAL	LITERAL1
+ALWAYS	LITERAL1
+
+TURN_RIGHT	LITERAL1
+TURN_LEFT	LITERAL1
+FORWARD	LITERAL1
+BACKWARD	LITERAL1
+STOP	LITERAL1
+GO_HOME	LITERAL1
+BLINK_LED	LITERAL1
+BEEP	LITERAL1
+LOG_EVENT	LITERAL1
+WAIT	LITERAL1
+NO_ACTION	LITERAL1
