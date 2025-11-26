@@ -1,0 +1,35 @@
+# Arduino
+*.elf
+*.hex
+*.bin
+*.map
+*.eep
+*.lss
+*.sym
+
+# Build directories
+build/
+*.o
+*.a
+
+# macOS
+.DS_Store
+._*
+
+# Windows
+Thumbs.db
+Desktop.ini
+
+# VSCode
+.vscode/
+
+# PlatformIO
+.pio/
+.pioenvs/
+.piolibdeps/
+
+# Temporary files
+*.tmp
+*.bak
+*.swp
+*~
