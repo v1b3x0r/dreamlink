@@ -4,7 +4,9 @@
 
 Motor::Motor(int pwm, int in1, int in2, int channel)
   : pwmPin(pwm), in1Pin(in1), in2Pin(in2), pwmChannel(channel) {
+}
 
+void Motor::begin() {
   pinMode(in1Pin, OUTPUT);
   pinMode(in2Pin, OUTPUT);
 

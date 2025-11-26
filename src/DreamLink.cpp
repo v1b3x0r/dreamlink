@@ -44,6 +44,12 @@ DreamLink::DreamLink()
   movement = new Movement();
   distanceSensor = new DistanceSensor();
   batterySensor = new BatterySensor();
+  audio = new AudioFeedback();
+
+  // Clear drivers
+  for (int i = 0; i < 16; i++) {
+    drivers[i] = nullptr;
+  }
 }
 
 DreamLink::~DreamLink() {
@@ -51,6 +57,7 @@ DreamLink::~DreamLink() {
   if (movement) delete movement;
   if (distanceSensor) delete distanceSensor;
   if (batterySensor) delete batterySensor;
+  if (audio) delete audio;
   if (pendingBuilder) delete pendingBuilder;
 }
 
@@ -58,7 +65,7 @@ DreamLink::~DreamLink() {
 // CORE LIFECYCLE
 // ========================================
 
-void DreamLink::begin() {
+void DreamLink::begin(const BoardConfig& config) {
   Serial.begin(115200);
   delay(500);
 
@@ -68,7 +75,53 @@ void DreamLink::begin() {
 
   randomSeed(analogRead(0));
 
+  // Initialize Subsystems with Config
+  movement->begin(config);
+  distanceSensor->begin(config.ultrasonicTrig, config.ultrasonicEcho);
+  batterySensor->begin(config.batteryPin);
+  audio->begin(config.buzzerPin);
+
   Serial.println("[DreamLink] System initialized");
+}
+
+ConfigBuilder DreamLink::configure() {
+  return ConfigBuilder(this);
+}
+
+void ConfigBuilder::begin() {
+  probe->begin(config);
+}
+
+void DreamLink::detectSensors() {
+  Wire.begin();
+  Serial.println("\n[DreamLink] Scanning I2C bus...");
+  
+  byte error, address;
+  int nDevices = 0;
+
+  for(address = 1; address < 127; address++ ) {
+    Wire.beginTransmission(address);
+    error = Wire.endTransmission();
+ 
+    if (error == 0) {
+      Serial.print("  - Found I2C device at 0x");
+      if (address < 16) Serial.print("0");
+      Serial.print(address, HEX);
+      
+      // Known sensors
+      if (address == 0x76 || address == 0x77) Serial.print(" (BME280/BMP280?)");
+      else if (address == 0x3C || address == 0x3D) Serial.print(" (OLED Display?)");
+      else if (address == 0x68) Serial.print(" (MPU6050/DS3231?)");
+      
+      Serial.println();
+      nDevices++;
+    }
+  }
+  
+  if (nDevices == 0)
+    Serial.println("  - No I2C devices found\n");
+  else
+    Serial.println("  - Scan complete\n");
 }
 
 void DreamLink::wakeup() {
@@ -85,7 +138,9 @@ void DreamLink::wakeup() {
   }
 
   // Create reflex engine with current rules
-  reflexEngine = new Reflex(rules, ruleCount);
+  reflexEngine = new Reflex(rules, ruleCount, audio, [this](SensorType type) {
+    return this->readSensor(type);
+  });
 
   isAwake = true;
 
@@ -212,25 +267,6 @@ void DreamLink::clearRules() {
   ruleCount = 0;
   if (pendingBuilder) {
     delete pendingBuilder;
-    pendingBuilder = nullptr;
-  }
-}
-
-// ========================================
-// SENSOR ACCESS
-// ========================================
-
-int DreamLink::readDistance() {
-  return distanceSensor->readCM();
-}
-
-int DreamLink::readBattery() {
-  return batterySensor->readPercent();
-}
-
-// ========================================
-// MANUAL CONTROL
-// ========================================
 
 void DreamLink::forward(int speed) {
   movement->forward(speed);

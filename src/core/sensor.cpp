@@ -6,19 +6,30 @@
 // DISTANCE SENSOR (HC-SR04 Ultrasonic)
 // ========================================
 
-DistanceSensor::DistanceSensor() {
-  pinMode(ULTRASONIC_TRIG, OUTPUT);
-  pinMode(ULTRASONIC_ECHO, INPUT);
+// ========================================
+// DISTANCE SENSOR (HC-SR04 Ultrasonic)
+// ========================================
+
+DistanceSensor::DistanceSensor() : trigPin(-1), echoPin(-1) {
+}
+
+void DistanceSensor::begin(int trig, int echo) {
+  trigPin = trig;
+  echoPin = echo;
+  pinMode(trigPin, OUTPUT);
+  pinMode(echoPin, INPUT);
 }
 
 int DistanceSensor::readCM() {
-  digitalWrite(ULTRASONIC_TRIG, LOW);
-  delayMicroseconds(2);
-  digitalWrite(ULTRASONIC_TRIG, HIGH);
-  delayMicroseconds(10);
-  digitalWrite(ULTRASONIC_TRIG, LOW);
+  if (trigPin == -1 || echoPin == -1) return 0;
 
-  long duration = pulseIn(ULTRASONIC_ECHO, HIGH, 30000); // timeout 30ms
+  digitalWrite(trigPin, LOW);
+  delayMicroseconds(2);
+  digitalWrite(trigPin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigPin, LOW);
+
+  long duration = pulseIn(echoPin, HIGH, 30000); // timeout 30ms
   if (duration == 0) return 999; // out of range
 
   int distance = duration * 0.034 / 2; // speed of sound: 340 m/s
@@ -29,12 +40,18 @@ int DistanceSensor::readCM() {
 // BATTERY SENSOR (Voltage Divider)
 // ========================================
 
-BatterySensor::BatterySensor() {
-  pinMode(BATTERY_PIN, INPUT);
+BatterySensor::BatterySensor() : pin(-1) {
+}
+
+void BatterySensor::begin(int p) {
+  pin = p;
+  pinMode(pin, INPUT);
 }
 
 int BatterySensor::readPercent() {
-  int raw = analogRead(BATTERY_PIN);
+  if (pin == -1) return 0;
+  
+  int raw = analogRead(pin);
   // ADC: 0-4095 (12-bit on ESP32)
   // Voltage divider: R1=10kΩ, R2=10kΩ (assuming 1:1 ratio)
   // Battery: 3.0V (empty) to 4.2V (full) for LiPo

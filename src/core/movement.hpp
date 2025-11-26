@@ -2,8 +2,16 @@
 #define MOVEMENT_HPP
 
 class Movement {
+private:
+  Motor* motorLeft;
+  Motor* motorRight;
+  int standbyPin;
+
 public:
   Movement();
+  ~Movement();
+  void begin(const BoardConfig& config);
+  
   void forward(int speed);    // speed: 0-255
   void backward(int speed);   // speed: 0-255
   void turnLeft(int speed);   // speed: 0-255 (pivot turn)

@@ -11,8 +11,8 @@ extern BatterySensor batterySensor;
 // Global movement instance
 extern Movement movement;
 
-Reflex::Reflex(Rule* ruleArray, int count)
-  : rules(ruleArray), ruleCount(count) {}
+Reflex::Reflex(Rule* ruleArray, int count, AudioFeedback* audioInstance, SensorCallback reader)
+  : rules(ruleArray), ruleCount(count), audio(audioInstance), sensorReader(reader) {}
 
 void Reflex::tick() {
   for (int i = 0; i < ruleCount; i++) {
@@ -58,17 +58,38 @@ bool Reflex::checkCondition(Rule& r) {
   }
 }
 
+// We need access to DreamLink instance to use readSensor()
+// But Reflex is a member of DreamLink.
+// For now, we'll keep using the global instances for internal sensors,
+// BUT we need a way to access the drivers.
+//
+// BETTER APPROACH: Pass the sensor reading function or interface to Reflex.
+// OR: Make DreamLink singleton (easy but dirty).
+// OR: Pass DreamLink* to Reflex.
+
+// Let's modify Reflex to take a callback or interface.
+// Actually, since we are in the same codebase, let's just use the drivers directly if we can access them.
+// But drivers are private in DreamLink.
+
+// Quick fix: Make Reflex call a static method or global wrapper? No.
+// Correct fix: Pass a "SensorReader" interface to Reflex.
+
+// For this iteration, let's update Reflex::readSensor to use the global DreamLink instance if available?
+// Wait, DreamLink is usually instantiated as `DreamLink probe;` in user sketch.
+// We don't have a global pointer to it here.
+
+// REFACTOR: Reflex should ask DreamLink for sensor data.
+// We will change Reflex to accept a "SensorProvider" function.
+
+// ... actually, let's look at how Reflex is constructed.
+// It's created inside DreamLink.
+// We can pass `this` to Reflex.
+
 int Reflex::readSensor(SensorType type) {
-  switch (type) {
-    case DISTANCE:
-      return distanceSensor.readCM();
-    case BATTERY:
-      return batterySensor.readPercent();
-    case NONE:
-      return 0;
-    default:
-      return 0; // unsupported sensor
+  if (sensorReader) {
+    return sensorReader(type);
   }
+  return 0;
 }
 
 void Reflex::executeAction(Rule& r) {
@@ -96,7 +117,7 @@ void Reflex::executeAction(Rule& r) {
       Serial.println(r.name);
       break;
     case BEEP:
-      // TODO: implement buzzer
+      if (audio) audio->beep(r.param);
       Serial.println("[BEEP]");
       break;
     case NO_ACTION:
